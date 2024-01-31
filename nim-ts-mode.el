@@ -122,9 +122,9 @@
      ((nil_literal) @constant.builtin-face)
 
      ;; string interpolation needs to added to the parser
-    ;; ((string) @python-face--treesit-fontify-string
-    ;;  (interpolation ["{" "}"] @font-face-lock-misc-punctuation-face))
-        )
+     ;; ((string) @python-face--treesit-fontify-string
+     ;;  (interpolation ["{" "}"] @font-face-lock-misc-punctuation-face))
+     )
 
     ;; Keyword
     :feature keyword
@@ -209,14 +209,14 @@
        "cast"
        ] @keyword.operator-face)
 
-       ;; true and false are missing as builtin constants and must be added in the parser lib
-      ((identifier) @constant.builtin-face
-       (:match "\\btrue\\b\\|\\bfalse\\b" @constant.builtin-face))
+     ;; true and false are missing as builtin constants and must be added in the parser lib
+     ((identifier) @constant.builtin-face
+      (:match "\\btrue\\b\\|\\bfalse\\b" @constant.builtin-face))
 
-      ([
-        "return"
-        "yield"
-        ] @keyword.return-face)
+     ([
+       "return"
+       "yield"
+       ] @keyword.return-face)
     )
 
     ;; Operators
@@ -297,64 +297,6 @@ font-specs should be in the format '(new-font-face old-font-face \"description\"
      (defface ,new '((t (:inherit ,old))) ,doc)
      (custom-theme-set-faces ',(if theme theme 'doom-one)
                              '(,new ((t (:inherit ,old)))))))
-
-
-;; (ntm--remap-fonts my-list)
-;; (setq my-list '(punctuation.bracket-face 'font-lock-bracket-face "bla"))
-
-;; (macroexpand '(nim-ts-mode--remap-font font-bla 'font-old "asdffs"))
-
-;; (progn (defface font-bla '((t (:inherit 'font-old))) "asdffs") (custom-theme-set-faces 'doom-one '(font-bla ((t (:inherit 'font-old))))))
-
-
-
-;; (defface punctuation.bracket-face '((t (:inherit 'font-lock-type-face))) "A font for punctuation")
-;; (custom-theme-set-faces
-;;  'doom-one
-;;  '(punctuation.bracket-face ((t (:inherit 'font-lock-type-face))) t))
-;; (symbol-plist 'punctuation.bracket-face)
-
-
-;; (setq my-list '((punctuation.bracket-face 'font-lock-bracket-face "bla")))
-;; (ntm--remap-fonts my-list)
-
-;; (macroexpand '(nim-ts-mode--remap-fonts my-list))
-
-
-;; (progn (progn (defface punctuation.bracket-face '((t (:inherit 'font-lock-bracket-face))) "bla") (custom-theme-set-faces 'doom-one '(punctuation.bracket-face ((t (:inherit 'font-lock-bracket-face)))))))
-
-;; (progn (defface punctuation.bracket-face (get 'font-lock-bracket-face 'face-defface-spec) "bla"))
-
-
-
-;; (defmacro ntm--remap-fonts ()
-;;   `(progn
-;;      ,@(mapcar
-;;         (lambda (spec)
-;;           (let ((new (car spec))
-;;                 (old (cadr spec))
-;;                 (doc (caddr spec)))
-;;             `(defface ,new (get ',old 'face-defface-spec) ,doc)))
-;;           my-list)))
-  
-
-;; (macroexpand
-;;  '(ntm--remap-fonts))
-
-;; (progn (defface punctuation.bracket-face (get 'font-lock-bracket-face 'face-defface-spec) "bla"))
-
-;; (setq my-list '((punctuation.bracket-face font-lock-bracket-face "bla")))
-;; (defface punctuation.bracket-face (get 'font-lock-bracket-face 'face-defface-spec) "A face for brackets")
-;; (get 'font-lock-bracket-face 'face-defface-spec)
-
-
-
-
-
-;; (nim-ts-mode--remap-fonts ((punctuation.bracket-face font-lock-bracket-face "A face for brackets")))
-
-
-
 
 
 

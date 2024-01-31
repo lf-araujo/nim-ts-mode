@@ -267,35 +267,48 @@
     (keyword.function-face 'font-lock-keyword-face "A face for function keywords")
     (keyword.operator-face 'font-lock-keyword-face "A face for operator keywords")
     (keyword.return-face 'font-lock-keyword-face "A face for return keywords")
-    (operator-face 'font-lock-operator-face "A face for operators")))
+    (operator-face 'font-lock-operator-face "A face for operators"))
+
+  "A list of new font to existing font mappings that are used by the `nim-ts-mode--remap-fonts' macro.
+Mappings should be in the format (new-font-face 'old-font-face \"description\") inside a list."
+  )
 
 
 (defvar nim-ts-mode--font-base-theme 'doom-one)
 
 
-;; TODO use nim-ts-mode--font-base-theme instead of theme
 ;; TODO make macro able to add additional font specs to the new font
 (defmacro nim-ts-mode--remap-fonts ()
-  "Creates new-font-face using defface copying the face-defface-spec from old-font-face.
-font-specs should be in the format '(new-font-face old-font-face \"description\")."
+  "Creates new font-faces using defface, inheriting from the given old font-faces and using
+the provided docstring and the theme specified in `nim-ts-mode--font-base-theme'.
+
+The mapping of new-font to old-font can be adjusted by modifying the
+`nim-ts-mode--font-remap-alist' variable.
+Font-specs should be in the format '(new-font-face 'old-font-face \"description\").
+Mappings should be in the format (new-font-face 'old-font-face \"description\") inside the list."
+
   `(progn
      ,@(mapcar
         (lambda (spec)
           (let ((new (car spec))
                 (old (cadr spec))
                 (doc (caddr spec)))
-            `(progn
-              (defface ,new '((t (:inherit ,old))) ,doc)
-              (custom-theme-set-faces ',nim-ts-mode--font-base-theme
-                                       '(,new ((t (:inherit ,old))))))
+            `(nim-ts-mode--remap-font ,new ,old ,doc ',nim-ts-mode--font-base-theme)
             ))
         nim-ts-mode--font-remap-alist
         )))
 
-(defmacro nim-ts-mode--remap-font (new old doc &optional theme)
+
+(defmacro nim-ts-mode--remap-font (new old doc theme)
+  "Creates a new font-face using defface and customizes it to match the given theme.
+
+NEW:   - the name to use as a symbol for the new font-face
+OLD:   - the symbol of the font-face to use as a base
+DOC:   - a docstring that describes the font-face
+THEME: - the symbol of the color theme to use to inherit from"
   `(progn
      (defface ,new '((t (:inherit ,old))) ,doc)
-     (custom-theme-set-faces ',(if theme theme 'doom-one)
+     (custom-theme-set-faces ,theme
                              '(,new ((t (:inherit ,old)))))))
 
 
@@ -327,11 +340,9 @@ font-specs should be in the format '(new-font-face old-font-face \"description\"
               '((comment delimiter special call declaration
                  exception expression literal_comment keyword operator)))
 
-
+  ;; remap the font-faces used as tree-sitter node captures to usable font-faces
   (nim-ts-mode--remap-fonts)
-  ;; (funcall
-  ;;  (nim-ts-mode--remap-fonts2) nim-ts-mode--font-remap-alist)
-  ;; (ntm-remap nim-ts-mode--font-remap-alist)
+
   (treesit-major-mode-setup))
 
 

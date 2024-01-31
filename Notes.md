@@ -12,3 +12,19 @@ we need to use an Emacs version without tree-sitter built-in, activate the tree-
 4. move nim.so to /home/p0p3/.emacs.d/elpa/30.0/develop/tree-sitter-langs-20240107.149/bin/
 5. call `tree-sitter-query-builder` inside Emacs after activating nim-ts-mode
 
+
+## Further Emacs configuration to make nim-ts-mode work with lsp-mode
+
+```elisp
+  (setq treesit-language-source-alist
+        '((nim "https://github.com/alaviss/tree-sitter-nim")))
+
+  (with-eval-after-load 'lsp-mode
+    (add-to-list 'lsp-language-id-configuration
+                 '(nim-ts-mode . "nim")))
+
+
+  (require 'nim-ts-mode)
+  (with-eval-after-load 'tree-sitter
+    (add-to-list 'tree-sitter-major-mode-language-alist '(nim-ts-mode . nim)))
+```

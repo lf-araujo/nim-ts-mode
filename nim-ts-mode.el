@@ -242,37 +242,37 @@
 
 
 (defvar nim-ts-mode--font-remap-alist
-  '((punctuation.delimiter-face 'font-lock-delimiter-face "A face for delimiters")
-    (punctuation.bracket-face 'font-lock-bracket-face "A face for brackets")
-    (variable.builtin-face 'font-lock-builtin-face "A face for builtin variables")
-    (function.call-face 'font-lock-function-call-face "A face for function calls")
-    (type.declaration-face 'font-lock-type-face "A face for type declarations")
-    (type.export-face 'font-lock-type-face "A face for type export")
-    (type.qualifier-face 'font-lock-type-face "A face for type qualification")
-    (function-face 'font-lock-function-name-face "A face for functions")
-    (method-face 'font-lock-function-name-face "A face for methods")
-    (function.macro-face 'font-lock-function-name-face "A face for macros")
-    (parameter-face 'font-lock-variable-use-face "A face for parameters")
-    (variable-face 'font-lock-variable-name-face "A face for variables")
-    (type-face 'font-lock-type-face "A face for types")
-    (exception-face 'font-lock-warning-face "A face for exceptions")
-    (field-face 'font-lock-property-use-face "A face for fields")
-    (comment-face 'font-lock-comment-face "A face for comments")
-    (comment.documentation-face 'font-lock-doc-face "A face for documentation")
-    (string-face 'font-lock-string-face "A face for strings")
-    (character-face 'font-lock-string-face "A face for characters")
-    (string.escape-face 'font-lock-escape-face "A face for escaped strings")
-    (number-face 'font-lock-number-face "A face for numbers")
-    (float-face 'font-lock-number-face "A face for floats")
-    (constant.builtin-face 'font-lock-constant-face "A face for constants")
-    (conditional-face 'font-lock-keyword-face "A face for conditionals")
-    (include-face 'font-lock-keyword-face "A face for include statements")
-    (repeat-face 'font-lock-keyword-face "A face for loops")
-    (keyword-face 'font-lock-keyword-face "A face for keywords")
-    (keyword.function-face 'font-lock-keyword-face "A face for function keywords")
-    (keyword.operator-face 'font-lock-keyword-face "A face for operator keywords")
-    (keyword.return-face 'font-lock-keyword-face "A face for return keywords")
-    (operator-face 'font-lock-operator-face "A face for operators"))
+  '((punctuation.delimiter-face ('font-lock-delimiter-face) "A face for delimiters")
+    (punctuation.bracket-face ('font-lock-bracket-face) "A face for brackets")
+    (variable.builtin-face ('font-lock-builtin-face) "A face for builtin variables")
+    (function.call-face ('font-lock-function-call-face) "A face for function calls")
+    (type.declaration-face ('font-lock-type-face) "A face for type declarations")
+    (type.export-face ('font-lock-type-face) "A face for type export")
+    (type.qualifier-face ('font-lock-type-face :weight bold) "A face for type qualification")
+    (function-face ('font-lock-function-name-face) "A face for functions")
+    (method-face ('font-lock-function-name-face) "A face for methods")
+    (function.macro-face ('font-lock-function-name-face) "A face for macros")
+    (parameter-face ('font-lock-variable-use-face) "A face for parameters")
+    (variable-face ('font-lock-variable-name-face) "A face for variables")
+    (type-face ('font-lock-type-face) "A face for types")
+    (exception-face ('font-lock-warning-face) "A face for exceptions")
+    (field-face ('font-lock-property-use-face) "A face for fields")
+    (comment-face ('font-lock-comment-face) "A face for comments")
+    (comment.documentation-face ('font-lock-doc-face) "A face for documentation")
+    (string-face ('font-lock-string-face) "A face for strings")
+    (character-face ('font-lock-string-face) "A face for characters")
+    (string.escape-face ('font-lock-escape-face) "A face for escaped strings")
+    (number-face ('font-lock-number-face) "A face for numbers")
+    (float-face ('font-lock-number-face) "A face for floats")
+    (constant.builtin-face ('font-lock-constant-face) "A face for constants")
+    (conditional-face ('font-lock-keyword-face) "A face for conditionals")
+    (include-face ('font-lock-keyword-face) "A face for include statements")
+    (repeat-face ('font-lock-keyword-face) "A face for loops")
+    (keyword-face ('font-lock-keyword-face) "A face for keywords")
+    (keyword.function-face ('font-lock-keyword-face) "A face for function keywords")
+    (keyword.operator-face ('font-lock-keyword-face) "A face for operator keywords")
+    (keyword.return-face ('font-lock-keyword-face) "A face for return keywords")
+    (operator-face ('font-lock-operator-face) "A face for operators"))
 
   "A list of new font to existing font mappings that are used by the `nim-ts-mode--remap-fonts' macro.
 Mappings should be in the format (new-font-face 'old-font-face \"description\") inside a list."
@@ -291,7 +291,6 @@ The mapping of new-font to old-font can be adjusted by modifying the
 `nim-ts-mode--font-remap-alist' variable.
 Font-specs should be in the format '(new-font-face 'old-font-face \"description\").
 Mappings should be in the format (new-font-face 'old-font-face \"description\") inside the list."
-
   `(progn
      ,@(mapcar
         (lambda (spec)
@@ -308,14 +307,28 @@ Mappings should be in the format (new-font-face 'old-font-face \"description\") 
   "Creates a new font-face using defface and customizes it to match the given theme.
 
 NEW:   - the name to use as a symbol for the new font-face
-OLD:   - the symbol of the font-face to use as a base
+OLD:   - a list containing the symbol of the font-face to use as a base and
+         additional attributes as key-value pairs e.g. ('font-lock-type-face :weight bold)
 DOC:   - a docstring that describes the font-face
 THEME: - the symbol of the color theme to use to inherit from"
   `(progn
-     (defface ,new '((t (:inherit ,old))) ,doc)
+     (defface ,new '((t (:inherit ,@old)))
+       ,doc)
      (custom-theme-set-faces ,theme
                              '(,new ((t (:inherit ,old)))))))
 
+;; (macroexpand '(nim-ts-mode--remap-font some-new-face ('font-lock-type-face :weight bold) "blafont" 'doom-one))
+;; (macroexpand '(nim-ts-mode--remap-font some-new-face ('font-lock-type-face) "blafont" 'doom-one))
+
+
+
+
+
+;; (defface some-new-face '((t (:inherit font-lock-type-face :weight bold))) "Some new face")
+;; (custom-theme-set-faces 'doom-one '(some-new-face ((t (:inherit font-lock-type-face)))))
+;; (symbol-plist 'font-lock-type-face)
+
+;; (variable-documentation "Face name to use for type and class names." face-defface-spec ((((class grayscale) (background light)) :foreground "Gray90" :weight bold) (((class grayscale) (background dark)) :foreground "DimGray" :weight bold) (((class color) (min-colors 88) (background light)) :foreground "ForestGreen") (((class color) (min-colors 88) (background dark)) :foreground "PaleGreen") (((class color) (min-colors 16) (background light)) :foreground "ForestGreen") (((class color) (min-colors 16) (background dark)) :foreground "PaleGreen") (((class color) (min-colors 8)) :foreground "green") (t :weight bold :underline t)) face-modified nil face 87 face-documentation "Font Lock mode face used to highlight type and class names." theme-face ((doom-one ((((class color) (min-colors 257)) (:foreground "#ECBE7B")) (((class color) (min-colors 256)) (:foreground "#ECBE7B")) (((class color) (min-colors 16)) (:foreground "yellow"))))) info-indented-text-regexp nil)
 
 
 ;;;###autoload

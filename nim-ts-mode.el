@@ -63,11 +63,16 @@
               (type_expression (identifier))
               (type_expression (accent_quoted (identifier)))
               ] @type-face
+       ;; TODO investigate if there can really be a return_type: node, because I haven't seen one up tu this point
        return_type: [
                      (type_expression (identifier))
                      (type_expression (accent_quoted (identifier)))
                      ] @type-face
-       ]))
+       ])
+     ;; highlight generic types
+     (type_expression (bracket_expression left: (identifier) @type-face
+                                          right: (argument_list (identifier) @type-face)))
+     )
 
     ;; Exceptions
     :feature exception

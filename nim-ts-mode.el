@@ -318,10 +318,41 @@ THEME: - the symbol of the color theme to use to inherit from"
                              '(,new ((t (:inherit ,old)))))))
 
 
+(defvar nim-indent-level 2)
 
 
+;; WIP
+(defvar nim-ts-indent-rules
+  (let ((offset nim-indent-level))
+    `((nim
+       (no-node column-0 0)
+       (catch-all prev-line 0)
+       )
+      )
+    )
+  )
 
 
+(defun nim-ts-mode-indent-line ()
+  (interactive)
+  (print "Called indent line")
+  (let (indent)
+    (save-excursion
+      (let ((current-word (word-at-point))
+            (current-node (treesit-node-at (point)))
+            (bol (lambda ()
+                   (beginning-of-line)
+                   (when (not (treesit-node-at (point))) (forward-word))
+                   (treesit-node-at (point))))
+            (prev-parent (lambda ()
+                           (backward-word)
+                           (treesit-node-parent
+                            (treesit-node-at (point))))))
+        (if (and (not current-node)
+                 (not bol))
+            (cl-case prev-parent
+              (treesit-node-type "if"))))))
+  )
 
 
 ;;;###autoload
@@ -343,9 +374,11 @@ THEME: - the symbol of the color theme to use to inherit from"
               (apply #'treesit-font-lock-rules
                      nim-ts-font-lock-rules))
 
+  ;; TODO make Indentation work with tree-sitter
+  ;; (setq-local indent-line-function #'nim-ts-mode-indent-line)
   ;; This handles indentation
-  (setq-local treesit-simple-indent-rules
-              nim-ts-indent-rules)
+  ;; (setq-local treesit-simple-indent-rules
+  ;;             nim-ts-indent-rules)
 
   (setq-local treesit-font-lock-feature-list
               '((comment keyword literal_comment)

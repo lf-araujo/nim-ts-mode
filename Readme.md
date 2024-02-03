@@ -3,7 +3,7 @@
 ## WIP
 
 This is currently a WIP which depends on `nim-mode` and the nim tree-sitter parser (https://github.com/alaviss/tree-sitter-nim) being installed.
-To install the Nim language grammar set the following in your init.el:
+To install the Nim language grammar set the following in your init.el and run `treesit-install-language-grammar`:
 
 ```elisp
 (require 'nim-ts-mode)

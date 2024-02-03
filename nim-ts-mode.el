@@ -348,8 +348,12 @@ THEME: - the symbol of the color theme to use to inherit from"
               nim-ts-indent-rules)
 
   (setq-local treesit-font-lock-feature-list
-              '((comment delimiter special call declaration
-                 exception expression literal_comment keyword operator)))
+              '((comment keyword literal_comment)
+                (declaration call expression)
+                (exception delimiter special operator)
+                ;; (delimiter special call declaration
+                ;;  exception expression literal_comment keyword operator)
+                ))
 
   ;; remap the font-faces used as tree-sitter node captures to usable font-faces
   (nim-ts-mode--remap-fonts)

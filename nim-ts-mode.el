@@ -237,10 +237,6 @@
   )
 
 
-(defvar nim-ts-indent-rules
-  '())
-
-
 (defvar nim-ts-mode--font-remap-alist
   '((punctuation.delimiter-face ('font-lock-delimiter-face) "A face for delimiters")
     (punctuation.bracket-face ('font-lock-bracket-face) "A face for brackets")
@@ -274,7 +270,7 @@
     (keyword.return-face ('font-lock-keyword-face) "A face for return keywords")
     (operator-face ('font-lock-operator-face) "A face for operators"))
 
-  "A list of new font to existing font mappings that are used by the `nim-ts-mode--remap-fonts' macro.
+  "A list of new-font to existing-font mappings that are used by the `nim-ts-mode--remap-fonts' macro.
 Mappings should be in the format (new-font-face 'old-font-face \"description\") inside a list."
   )
 
@@ -282,7 +278,6 @@ Mappings should be in the format (new-font-face 'old-font-face \"description\") 
 (defvar nim-ts-mode--font-base-theme 'doom-one)
 
 
-;; TODO make macro able to add additional font specs to the new font
 (defmacro nim-ts-mode--remap-fonts ()
   "Creates new font-faces using defface, inheriting from the given old font-faces and using
 the provided docstring and the theme specified in `nim-ts-mode--font-base-theme'.
@@ -318,12 +313,12 @@ THEME: - the symbol of the color theme to use to inherit from"
                              '(,new ((t (:inherit ,old)))))))
 
 
-(defvar nim-indent-level 2)
+(defvar nim-ts-mode-indent-level 2)
 
 
 ;; WIP
 (defvar nim-ts-indent-rules
-  (let ((offset nim-indent-level))
+  (let ((offset nim-ts-mode-indent-level))
     `((nim
        (no-node column-0 0)
        (catch-all prev-line 0)
@@ -333,26 +328,17 @@ THEME: - the symbol of the color theme to use to inherit from"
   )
 
 
-(defun nim-ts-mode-indent-line ()
+(defun nim-ts-mode-indent-line-simple ()
+  "Indent the current Nim code line as simple as it gets."
   (interactive)
-  (print "Called indent line")
-  (let (indent)
-    (save-excursion
-      (let ((current-word (word-at-point))
-            (current-node (treesit-node-at (point)))
-            (bol (lambda ()
-                   (beginning-of-line)
-                   (when (not (treesit-node-at (point))) (forward-word))
-                   (treesit-node-at (point))))
-            (prev-parent (lambda ()
-                           (backward-word)
-                           (treesit-node-parent
-                            (treesit-node-at (point))))))
-        (if (and (not current-node)
-                 (not bol))
-            (cl-case prev-parent
-              (treesit-node-type "if"))))))
-  )
+  (if (eq this-command 'indent-for-tab-command)
+      (indent-line-to (+ (current-indentation) nim-ts-mode-indent-level))
+    (let ((c-indent
+           (save-excursion
+             (forward-line -1)
+             (beginning-of-line)
+             (current-indentation))))
+        (indent-line-to c-indent))))
 
 
 ;;;###autoload
@@ -375,10 +361,7 @@ THEME: - the symbol of the color theme to use to inherit from"
                      nim-ts-font-lock-rules))
 
   ;; TODO make Indentation work with tree-sitter
-  ;; (setq-local indent-line-function #'nim-ts-mode-indent-line)
-  ;; This handles indentation
-  ;; (setq-local treesit-simple-indent-rules
-  ;;             nim-ts-indent-rules)
+  (setq-local indent-line-function #'nim-ts-mode-indent-line-simple)
 
   (setq-local treesit-font-lock-feature-list
               '((comment keyword literal_comment)

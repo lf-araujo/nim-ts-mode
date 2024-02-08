@@ -1,3 +1,41 @@
+;;;-*- lexical-binding: t -*-
+;;; nim-ts-mode.el --- An Emacs major mode for the Nim language using tree-sitter.
+
+;; Copyright (C) 2024 Tobias Heinlein
+
+;; Author: Tobias Heinlein <niontrix@mailbox.org>
+;; Maintainer: Tobias Heinlein <niontrix@mailbox.org>
+;; Created: 01 Feb 2024
+;; Version: 0.1.0
+;; Keywords: convenience editing nim highlighting
+;; URL: https://github.com/niontrix/nim-ts-mode
+
+;; This file is not part of GNU Emacs.
+
+;;; License:
+
+;; MIT License
+
+;; Copyright (c) [2024] [Tobias Heinlein]
+
+;; Permission is hereby granted, free of charge, to any person obtaining a copy
+;; of this software and associated documentation files (the "Software"), to deal
+;; in the Software without restriction, including without limitation the rights
+;; to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+;; copies of the Software, and to permit persons to whom the Software is
+;; furnished to do so, subject to the following conditions:
+
+;; The above copyright notice and this permission notice shall be included in all
+;; copies or substantial portions of the Software.
+
+;; THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+;; IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+;; FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+;; AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+;; LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+;; OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+;; SOFTWARE.
+
 (require 'nim-mode)
 (require 'treesit)
 
@@ -43,16 +81,18 @@
      (type_symbol_declaration
       name: [
              (identifier) @type.declaration-face
-             (exported_symbol) @type.export-face
+             (exported_symbol "*" @type.qualifier-face) @type.export-face
              ])
-     (exported_symbol "*" @type.qualifier-face)
+     (proc_declaration (exported_symbol "*" @type.qualifier-face) @function.exported-face)
      (_ "=" @punctuation.delimiter-face [body: (_) value: (_)])
      (proc_declaration name: (_) @function-face)
      (func_declaration name: (_) @function-face)
      (converter_declaration name: (_) @function-face)
      (method_declaration name: (_) @method-face)
      (template_declaration name: (_) @function.macro-face)
+     (template_declaration (exported_symbol "*" @type.qualifier-face) @function.exported-face)
      (macro_declaration name: (_) @function.macro-face)
+     (macro_declaration (exported_symbol "*" @type.qualifier-face) @function.exported-face)
      (parameter_declaration
       (symbol_declaration_list
        (symbol_declaration name: (_) @parameter-face)))
@@ -227,7 +267,6 @@
     ;; Operators
     :feature operator
     :language nim
-    :override t
     ((infix_expression operator: _ @operator-face)
      (prefix_expression operator: _ @operator-face)
      [
@@ -243,8 +282,9 @@
     (variable.builtin-face ('font-lock-builtin-face) "A face for builtin variables")
     (function.call-face ('font-lock-function-call-face) "A face for function calls")
     (type.declaration-face ('font-lock-type-face) "A face for type declarations")
-    (type.export-face ('font-lock-type-face) "A face for type export")
-    (type.qualifier-face ('font-lock-type-face :weight bold) "A face for type qualification")
+    (type.export-face ('font-lock-type-face :weight bold) "A face for type export")
+    (type.qualifier-face ('font-lock-type-face) "A face for type qualification")
+    (function.exported-face ('font-lock-function-name-face :weight bold) "A face for exported functions")
     (function-face ('font-lock-function-name-face) "A face for functions")
     (method-face ('font-lock-function-name-face) "A face for methods")
     (function.macro-face ('font-lock-function-name-face) "A face for macros")
@@ -266,7 +306,7 @@
     (repeat-face ('font-lock-keyword-face) "A face for loops")
     (keyword-face ('font-lock-keyword-face) "A face for keywords")
     (keyword.function-face ('font-lock-keyword-face) "A face for function keywords")
-    (keyword.operator-face ('font-lock-keyword-face) "A face for operator keywords")
+    (keyword.operator-face ('font-lock-keyword-face :slant oblique) "A face for operator keywords")
     (keyword.return-face ('font-lock-keyword-face) "A face for return keywords")
     (operator-face ('font-lock-operator-face) "A face for operators"))
 
@@ -316,29 +356,48 @@ THEME: - the symbol of the color theme to use to inherit from"
 (defvar nim-ts-mode-indent-level 2)
 
 
-;; WIP
-(defvar nim-ts-indent-rules
-  (let ((offset nim-ts-mode-indent-level))
-    `((nim
-       (no-node column-0 0)
-       (catch-all prev-line 0)
-       )
-      )
-    )
-  )
-
-
 (defun nim-ts-mode-indent-line-simple ()
   "Indent the current Nim code line as simple as it gets."
   (interactive)
-  (if (eq this-command 'indent-for-tab-command)
-      (indent-line-to (+ (current-indentation) nim-ts-mode-indent-level))
-    (let ((c-indent
-           (save-excursion
-             (forward-line -1)
-             (beginning-of-line)
-             (current-indentation))))
-        (indent-line-to c-indent))))
+  (let ((two-lines-empty (save-excursion
+                           (and
+                            (progn
+                              (beginning-of-line)
+                              (looking-at "[[:blank:]]*$"))
+                            (progn
+                              (forward-line -1)
+                              (looking-at "[[:blank:]]*$")))))
+        (indent-further (save-excursion
+                         (backward-word)
+                         (end-of-line)
+                         (re-search-backward "[:=]" (line-beginning-position) t)
+                         (looking-at "[:=][[:blank:]]*$")
+                         )))
+    (cond
+     ;; if our current line and the previous line are empty,
+     ;; we want to go back to the last indentation level
+     ((and (eq this-command 'indent-for-tab-command) two-lines-empty)
+      (let ((prev-indent (save-excursion
+                                (forward-line -2)
+                                (current-indentation))))
+        (indent-line-to prev-indent)))
+
+     ((eq this-command 'indent-for-tab-command)
+      (indent-line-to (+ (current-indentation) nim-ts-mode-indent-level)))
+
+     ((and indent-further (eq this-command 'newline-and-indent))
+      (let ((prev-indent (save-excursion
+                           (backward-word)
+                           (current-indentation))))
+        (indent-line-to (+ prev-indent nim-ts-mode-indent-level))))
+
+     (t
+      (let ((prev-indent
+             (save-excursion
+               (forward-line -1)
+               (beginning-of-line)
+               (current-indentation))))
+        (indent-line-to prev-indent))))))
 
 
 ;;;###autoload
@@ -347,6 +406,11 @@ THEME: - the symbol of the color theme to use to inherit from"
   :syntax-table nim-mode-syntax-table
 
   (setq-local font-lock-defaults nil)
+
+  ;; disable electric indent as long as tree-sitter indent is not working properly
+  ;; or if electric-indent is not using tree-sitter at all and we are still depending on nim-mode
+  (electric-indent-mode -1)
+
   (when (treesit-ready-p 'nim)
     (treesit-parser-create 'nim)
     (nim-ts-setup)))

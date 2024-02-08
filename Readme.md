@@ -22,8 +22,10 @@ To install the Nim language grammar set the following in your init.el and run `t
 ## TODO
 
 - [x] Make syntax highlighting work using tree-sitter
+- [x] Provide simplified indentation mechanism
+- [ ] Highlight HTML and Javscript parts in strings using their respective parsers
 - [ ] Create package that auto-installs dependencies and sets up tree-sitter, etc.
-- [ ] Make indentation work using tree-sitter
+- [ ] ~~Make indentation work using tree-sitter~~ question if this really is necessary
 - [ ] See if we can remove dependencies from `nim-mode` (if it makes sense)
 
 

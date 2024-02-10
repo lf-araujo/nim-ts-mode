@@ -1,14 +1,13 @@
-;;;-*- lexical-binding: t -*-
-;;; nim-ts-mode.el --- An Emacs major mode for the Nim language using tree-sitter.
+;;; nim-ts-mode.el --- An Emacs major mode for the Nim language using tree-sitter. -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2024 Tobias Heinlein
 
 ;; Author: Tobias Heinlein <niontrix@mailbox.org>
+;; URL: https://github.com/niontrix/nim-ts-mode
 ;; Maintainer: Tobias Heinlein <niontrix@mailbox.org>
 ;; Created: 01 Feb 2024
 ;; Version: 0.1.0
-;; Keywords: convenience editing nim highlighting
-;; URL: https://github.com/niontrix/nim-ts-mode
+;; Keywords: convenience, editing, nim, highlighting, tools
 
 ;; This file is not part of GNU Emacs.
 
